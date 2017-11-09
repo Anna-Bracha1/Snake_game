@@ -3,7 +3,6 @@
 
 Display::Display(/*const string & nm1, const string & nm2,*/ unsigned char ln1, unsigned char ln2, unsigned char th1, unsigned char th2, unsigned char headX1, unsigned char headX2, unsigned char headY1, unsigned char headY2)
 : player1(/*nm1*/ln1, th1, headX1, headY1), player2(/*nm1*/ln2, th2, headX2, headY2)
-//SPRAWDZIC JAK TO JEST Z TYMI KONSTRUKTORAMI (KIEDY WYWOLUJA SIE KONSTRUKTORY ZMIENNYCH WEWNATRZ KLASY!!!!
 {
 	for(int i=0; i<((mapW*mapH)/8); i++)
 		bitMap[i]=0;
@@ -14,10 +13,10 @@ Display::Display(/*const string & nm1, const string & nm2,*/ unsigned char ln1, 
 		setPixel(temp);
 		temp.x-=1;
 	}
-  player1.tail.index=((temp.y*(mapW/8))+(temp.x/8));
-  player1.tail.poSition=(temp.x+1) % 8;
-  player1.tail2.index=player1.tail.index+(player1.tail.poSition+1)/8;
-  player1.tail2.poSition=(player1.tail.poSition+1) % 8;
+ 	 player1.tail.index=((temp.y*(mapW/8))+(temp.x/8));
+ 	 player1.tail.poSition=(temp.x+1) % 8;
+  	player1.tail2.index=player1.tail.index+(player1.tail.poSition+1)/8;
+  	player1.tail2.poSition=(player1.tail.poSition+1) % 8;
   
 	temp=player2.head;
 	for(int i=0; i<player2.Slength; i++)
@@ -25,18 +24,18 @@ Display::Display(/*const string & nm1, const string & nm2,*/ unsigned char ln1, 
 		setPixel(temp);
 		temp.x-=1;
 	}
-  player2.tail.index=((temp.y*(mapW/8))+(temp.x/8));
-  player2.tail.poSition=(temp.x+1) % 8;
-  player2.tail2.index=player2.tail.index+(player2.tail.poSition+1)/8;
-  player2.tail2.poSition=(player2.tail.poSition+1) % 8;
+ 	player2.tail.index=((temp.y*(mapW/8))+(temp.x/8));
+  	player2.tail.poSition=(temp.x+1) % 8;
+  	player2.tail2.index=player2.tail.index+(player2.tail.poSition+1)/8;
+  	player2.tail2.poSition=(player2.tail.poSition+1) % 8;
 }
 
 void Display::setPixel(XY coordinates)
 {
   //SPRAWDZIC CZY = {0} JEST POPRAWNE!!!!!
 	unsigned char bin[8] /*= {0}*/; // table to store binary notation of the currently processed byte
-  for(char i=0; i<8; i++)
-    bin[i]=0;
+  	for(char i=0; i<8; i++)
+  		bin[i]=0;
 	int index=((coordinates.y*(mapW/8))+(coordinates.x/8)); // index in the XBM bitmap
 	unsigned char poSition=coordinates.x % 8;
 	decToBin(bin, bitMap[index]);
@@ -48,7 +47,7 @@ void Display::clearPixel(IndPos parameters)
 {
   unsigned char bin[8] /*= {0}*/; // table to store binary notation of the currently processed byte
   for(char i=0; i<8; i++)
-    bin[i]=0;
+  	bin[i]=0;
   decToBin(bin, bitMap[parameters.index]);
   Serial.print("Index: ");
   Serial.print(parameters.index);
@@ -67,7 +66,7 @@ void Display::setBody(unsigned char playerNum, MoveHead directionH)
 {
   unsigned char bin[8] /*= {0}*/; // table to store binary notation of the currently processed byte
   for(char i=0; i<8; i++)
-    bin[i]=0;
+  	bin[i]=0;
   XY temp;
   
   if(playerNum == 1)
