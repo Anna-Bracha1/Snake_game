@@ -10,6 +10,10 @@ Snake::Snake(/*const string & nm,*/ unsigned char ln, unsigned char th, unsigned
 	head.y = headY;
 	head2.x = head.x-1;
   head2.y = head.y;
+  tail.index=((head.y*cols)+((head.x-Slength+1)/8));
+  tail.poSition=(head.x-Slength+1) % 8;
+  tail2.index=tail.index+(tail.poSition+1)/8;
+  tail2.poSition=(tail.poSition+1) % 8;
 }
 
 /*int Snake::pickName(const std::string & nm)
@@ -48,10 +52,19 @@ int Snake::addToScore(int num)
 	return score;
 }
 
-void Snake::setHead(MoveHead directionH)
+void Snake::setHead(DIRECTIONS directionH)
 {	
+  if((directionH == UP) && (head.x == head2.x) && (head.y > head2.y) && (head.y != maximumY))
+    directionH = DOWN;
+  else if((directionH == DOWN) && (head.x == head2.x) && (head.y < head2.y) && (head2.y != maximumY))
+    directionH = UP;
+  else if((directionH == RIGHT) && (head.y == head2.y) && (head.x < head2.x) && (head2.x != maximumX))
+    directionH = LEFT;
+  else if((directionH == LEFT) && (head.y == head2.y) && (head.x > head2.x) && (head.x != maximumX))
+    directionH = RIGHT;
+  
 	if(directionH == UP)
-	{
+	{    
 		if(head.y == 0)
     {
 			head.y=maximumY-1;
@@ -70,11 +83,17 @@ void Snake::setHead(MoveHead directionH)
 		else
     {
 			head.y-=2;
-      head2.y-=2;
+      if(head2.x != head.x)
+        head2.y-=1;
+      else
+        head2.y-=2;
     }
+    if(head2.x != head.x)
+      head2.x=head.x;
 	}
-	else if(directionH == DOWN)
-	{
+ 
+	if(directionH == DOWN)
+	{ 
 		if(head.y == maximumY)
     {
 			head.y=1;
@@ -93,11 +112,17 @@ void Snake::setHead(MoveHead directionH)
 		else
     {
 			head.y+=2;
-      head2.y+=2;
-    } 
+      if(head2.x != head.x)
+        head2.y+=1;
+      else
+        head2.y+=2;
+    }
+    if(head2.x != head.x)
+      head2.x=head.x;
 	}
-	else if(directionH == RIGHT)
-	{
+	
+	if(directionH == RIGHT)
+	{  
 		if(head.x == maximumX)
     {
 			head.x=1;
@@ -116,11 +141,17 @@ void Snake::setHead(MoveHead directionH)
 		else
     {
 			head.x+=2;
-      head2.x+=2;
+      if(head2.y != head.y)
+        head2.x+=1;
+      else
+        head2.x+=2;
     }
+    if(head2.y != head.y)
+      head2.y=head.y;
 	}
-	else if(directionH == LEFT)
-	{
+	
+	if(directionH == LEFT)
+	{   
     if(head.x == 0)
     {
 			head.x=maximumX-1;
@@ -139,7 +170,12 @@ void Snake::setHead(MoveHead directionH)
 		else
     {
 			head.x-=2;
-      head2.x-=2;;
+      if(head2.y != head.y)
+        head2.x-=1;
+      else
+        head2.x-=2;
     }
+    if(head2.y != head.y)
+      head2.y=head.y;
 	}
 }
