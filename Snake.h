@@ -3,14 +3,17 @@
 
 //#include <string>
 //#include <iostream>
-#include "math.h"
 //using std::cout;
 //using std::endl;
 //using std::string;
 
 #define maximumX 127 //the maximum X coordinate on the display
 #define maximumY 63 //the maximum Y coordinate on the display
-enum MoveHead {UP, DOWN, RIGHT, LEFT};
+#define mapW 128 // width of the bitmap
+#define mapH 64 // height of the bitmap
+#define maxIndex ((mapW*mapH)/8-1) // maximum value of the index in the bitMap
+#define cols (mapW/8) // number of cols in the display dived by bytes of eight pixels
+enum DIRECTIONS {UP, DOWN, RIGHT, LEFT};
 
 struct XY
 {
@@ -46,7 +49,7 @@ class Snake
 		int addToScore(int num);
 		//string viewName() { return name; }
 		int viewScore() { return score; }
-		void setHead(MoveHead directionH);
+		void setHead(DIRECTIONS directionH);
 };
 
 #endif
