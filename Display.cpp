@@ -3,8 +3,9 @@
 
 Display::Display(/*const string & nm1, const string & nm2,*/ unsigned char ln1, unsigned char ln2, unsigned char th1, unsigned char th2, unsigned char headX1, unsigned char headX2, unsigned char headY1, unsigned char headY2)
 : player1(/*nm1*/ln1, th1, headX1, headY1), player2(/*nm1*/ln2, th2, headX2, headY2)
+//SPRAWDZIC JAK TO JEST Z TYMI KONSTRUKTORAMI (KIEDY WYWOLUJA SIE KONSTRUKTORY ZMIENNYCH WEWNATRZ KLASY!!!!
 {
-	for(int i=0; i<((mapW*mapH)/8); i++)
+	for(int i=0; i<(maxIndex+1); i++)
 		bitMap[i]=0;
 	
 	XY temp=player1.head;
@@ -13,10 +14,6 @@ Display::Display(/*const string & nm1, const string & nm2,*/ unsigned char ln1, 
 		setPixel(temp);
 		temp.x-=1;
 	}
- 	 player1.tail.index=((temp.y*(mapW/8))+(temp.x/8));
- 	 player1.tail.poSition=(temp.x+1) % 8;
-  	player1.tail2.index=player1.tail.index+(player1.tail.poSition+1)/8;
-  	player1.tail2.poSition=(player1.tail.poSition+1) % 8;
   
 	temp=player2.head;
 	for(int i=0; i<player2.Slength; i++)
@@ -24,19 +21,12 @@ Display::Display(/*const string & nm1, const string & nm2,*/ unsigned char ln1, 
 		setPixel(temp);
 		temp.x-=1;
 	}
- 	player2.tail.index=((temp.y*(mapW/8))+(temp.x/8));
-  	player2.tail.poSition=(temp.x+1) % 8;
-  	player2.tail2.index=player2.tail.index+(player2.tail.poSition+1)/8;
-  	player2.tail2.poSition=(player2.tail.poSition+1) % 8;
 }
 
 void Display::setPixel(XY coordinates)
 {
-  //SPRAWDZIC CZY = {0} JEST POPRAWNE!!!!!
-	unsigned char bin[8] /*= {0}*/; // table to store binary notation of the currently processed byte
-  	for(char i=0; i<8; i++)
-  		bin[i]=0;
-	int index=((coordinates.y*(mapW/8))+(coordinates.x/8)); // index in the XBM bitmap
+	unsigned char bin[8]; // table to store binary notation of the currently processed byte
+	int index=((coordinates.y*cols)+(coordinates.x/8)); // index in the XBM bitmap
 	unsigned char poSition=coordinates.x % 8;
 	decToBin(bin, bitMap[index]);
 	bin[poSition]=1;
@@ -45,29 +35,26 @@ void Display::setPixel(XY coordinates)
 
 void Display::clearPixel(IndPos parameters)
 {
-  unsigned char bin[8] /*= {0}*/; // table to store binary notation of the currently processed byte
-  for(char i=0; i<8; i++)
-  	bin[i]=0;
+  unsigned char bin[8]; // table to store binary notation of the currently processed byte
+  
   decToBin(bin, bitMap[parameters.index]);
-  Serial.print("Index: ");
-  Serial.print(parameters.index);
-  Serial.print("Position: ");
-  Serial.print(parameters.poSition);
-  Serial.print("\nbins:\n");
-  Serial.print(binToDec(bin));
-  Serial.print("\n");
+  //Serial.print("Index: ");
+  //Serial.print(parameters.index);
+  //Serial.print("Position: ");
+  //Serial.print(parameters.poSition);
+  //Serial.print("\nbins:\n");
+  //Serial.print(binToDec(bin));
+  //Serial.print("\n");
   bin[parameters.poSition]=0;
-  Serial.print(binToDec(bin));
-  Serial.print("\n");
+  //Serial.print(binToDec(bin));
+  //Serial.print("\n");
   bitMap[parameters.index]=binToDec(bin);
 }
 
-void Display::setBody(unsigned char playerNum, MoveHead directionH)
+void Display::setBody(unsigned char playerNum, DIRECTIONS directionH)
 {
-  unsigned char bin[8] /*= {0}*/; // table to store binary notation of the currently processed byte
-  for(char i=0; i<8; i++)
-  	bin[i]=0;
-  XY temp;
+  unsigned char bin[8]; // table to store binary notation of the currently processed byte
+  DIRECTIONS directionT;
   
   if(playerNum == 1)
   {
@@ -78,45 +65,124 @@ void Display::setBody(unsigned char playerNum, MoveHead directionH)
     clearPixel(player1.tail);
     clearPixel(player1.tail2);
 
-    decToBin(bin, bitMap[player1.tail2.index-mapW/8]);
+    int nextIndex;
+    
+    if(player1.tail2.index < cols)
+      nextIndex=maxIndex-(cols-1-player1.tail2.index);
+    else
+      nextIndex=player1.tail2.index-cols;
+    
+    decToBin(bin, bitMap[nextIndex]);
     while(1)
     {
       if(bin[player1.tail2.poSition] == 1)
       {
-        player1.tail.index-=mapW/8;
-        break;
-      }
-      
-      decToBin(bin, bitMap[player1.tail2.index+mapW/8]);
-      if(bin[player1.tail2.poSition] == 1)
-      {
-        player1.tail.index+=mapW/8;
+        player1.tail.index=nextIndex;
+        player1.tail.poSition=player1.tail2.poSition;
+        directionT=UP;
         break;
       }
 
-      decToBin(bin, bitMap[player1.tail2.index+(player1.tail2.poSition+1)/8]);
+      if(player1.tail2.index > (maxIndex-cols))
+        nextIndex=(cols-1)-(maxIndex-player1.tail2.index);
+      else
+        nextIndex=player1.tail2.index+cols;
+      
+      decToBin(bin, bitMap[nextIndex]);
+      if(bin[player1.tail2.poSition] == 1)
+      {
+        player1.tail.index=nextIndex;
+        player1.tail.poSition=player1.tail2.poSition;
+        directionT=DOWN;
+        break;
+      }
+
+      if((player1.tail2.index+(player1.tail2.poSition+1)/8) == (maxIndex+1))
+        nextIndex=maxIndex-cols+1;
+      else
+        nextIndex=player1.tail2.index+(player1.tail2.poSition+1)/8;
+      
+      decToBin(bin, bitMap[nextIndex]);
       if(bin[(player1.tail2.poSition+1)%8] == 1)
       {
-        player1.tail.index+=(player1.tail2.poSition+1)/8;
+        player1.tail.index=nextIndex;
         player1.tail.poSition=(player1.tail2.poSition+1)%8;
+        directionT=RIGHT;
         break;
       }
 
       if(player1.tail2.poSition == 0)
       {
-        player1.tail.index-=1;
+        if(player1.tail2.index == 0)
+          player1.tail.index=cols-1;
+        else
+          player1.tail.index-=1;
+        
         player1.tail.poSition=7;
       }
-      else 
-        player1.tail.poSition-=1;
+      else
+      {
+        player1.tail.index=player1.tail2.index;
+        player1.tail.poSition=player1.tail2.poSition-1;
+      }
+      directionT=LEFT;
       break;
+    }
+    
+    if(directionT == UP)
+    {
+      if(player1.tail.index < cols)
+        player1.tail2.index=maxIndex-(cols-1-player1.tail.index);
+      else
+        player1.tail2.index=player1.tail.index-cols;
+      
+      player1.tail2.poSition=player1.tail.poSition;
+    }  
+    
+    else if(directionT == DOWN)
+    {
+      if(player1.tail.index > (maxIndex-cols))
+        player1.tail2.index=maxIndex-(cols-1-player1.tail.index);
+      else
+        player1.tail2.index=player1.tail.index+cols;
+      
+      player1.tail2.poSition=player1.tail.poSition;
+    }
+    
+    else if(directionT == RIGHT)
+    {
+      if((player1.tail.index+(player1.tail.poSition+1)/8) == (maxIndex+1))
+      {
+        player1.tail2.index=maxIndex-cols+1;
+        player1.tail2.poSition=0;
+      }
+      else
+      {
+        player1.tail2.index=player1.tail.index+(player1.tail.poSition+1)/8;
+        player1.tail2.poSition=(player1.tail.poSition+1) % 8;
+      }
+    }
+    
+    else
+    {
+      if(player1.tail.poSition == 0)
+      {
+        if(player1.tail.index == 0)
+          player1.tail2.index=cols-1;
+        else
+          player1.tail2.index-=1;
+          
+        player1.tail2.poSition=7;
+      }
+      else
+      {
+        player1.tail2.index=player1.tail.index;
+        player1.tail2.poSition=player1.tail.poSition-1;
+      }
     }
   }
 
-  player1.tail2.index=player1.tail.index+(player1.tail.poSition+1)/8;
-  player1.tail2.poSition=(player1.tail.poSition+1)%8;
-
-  if(playerNum == 2)
+  else if(playerNum == 2)
   {
     player2.setHead(directionH);
     setPixel(player2.head);
@@ -125,43 +191,122 @@ void Display::setBody(unsigned char playerNum, MoveHead directionH)
     clearPixel(player2.tail);
     clearPixel(player2.tail2);
 
-    decToBin(bin, bitMap[player2.tail2.index-mapW/8]);
+    int nextIndex;
+    
+    if(player2.tail2.index < cols)
+      nextIndex=maxIndex-(cols-1-player2.tail2.index);
+    else
+      nextIndex=player2.tail2.index-cols;
+    
+    decToBin(bin, bitMap[nextIndex]);
     while(1)
     {
       if(bin[player2.tail2.poSition] == 1)
       {
-        player2.tail.index-=mapW/8;
-        break;
-      }
-      
-      decToBin(bin, bitMap[player2.tail2.index+mapW/8]);
-      if(bin[player2.tail2.poSition] == 1)
-      {
-        player2.tail.index+=mapW/8;
+        player2.tail.index=nextIndex;
+        player2.tail.poSition=player2.tail2.poSition;
+        directionT=UP;
         break;
       }
 
-      decToBin(bin, bitMap[player2.tail2.index+(player2.tail2.poSition+1)/8]);
+      if(player2.tail2.index > (maxIndex-cols))
+        nextIndex=(cols-1)-(maxIndex-player2.tail2.index);
+      else
+        nextIndex=player2.tail2.index+cols;
+      
+      decToBin(bin, bitMap[nextIndex]);
+      if(bin[player2.tail2.poSition] == 1)
+      {
+        player2.tail.index=nextIndex;
+        player2.tail.poSition=player2.tail2.poSition;
+        directionT=DOWN;
+        break;
+      }
+
+      if((player2.tail2.index+(player2.tail2.poSition+1)/8) == (maxIndex+1))
+        nextIndex=maxIndex-cols+1;
+      else
+        nextIndex=player2.tail2.index+(player2.tail2.poSition+1)/8;
+      
+      decToBin(bin, bitMap[nextIndex]);
       if(bin[(player2.tail2.poSition+1)%8] == 1)
       {
-        player2.tail.index+=(player2.tail2.poSition+1)/8;
+        player2.tail.index=nextIndex;
         player2.tail.poSition=(player2.tail2.poSition+1)%8;
+        directionT=RIGHT;
         break;
       }
 
       if(player2.tail2.poSition == 0)
       {
-        player2.tail.index-=1;
+        if(player2.tail2.index == 0)
+          player2.tail.index=cols-1;
+        else
+          player2.tail.index-=1;
+        
         player2.tail.poSition=7;
       }
-      else 
-        player2.tail.poSition-=1;
+      else
+      {
+        player2.tail.index=player2.tail2.index;
+        player2.tail.poSition=player2.tail2.poSition-1;
+      }
+      directionT=LEFT;
       break;
     }
+    
+    if(directionT == UP)
+    {
+      if(player2.tail.index < cols)
+        player2.tail2.index=maxIndex-(cols-1-player2.tail.index);
+      else
+        player2.tail2.index=player2.tail.index-cols;
+      
+      player2.tail2.poSition=player2.tail.poSition;
+    }  
+    
+    else if(directionT == DOWN)
+    {
+      if(player2.tail.index > (maxIndex-cols))
+        player2.tail2.index=maxIndex-(cols-1-player2.tail.index);
+      else
+        player2.tail2.index=player2.tail.index+cols;
+      
+      player2.tail2.poSition=player2.tail.poSition;
+    }
+    
+    else if(directionT == RIGHT)
+    {
+      if((player2.tail.index+(player2.tail.poSition+1)/8) == (maxIndex+1))
+      {
+        player2.tail2.index=maxIndex-cols+1;
+        player2.tail2.poSition=0;
+      }
+      else
+      {
+        player2.tail2.index=player2.tail.index+(player2.tail.poSition+1)/8;
+        player2.tail2.poSition=(player2.tail.poSition+1) % 8;
+      }
+    }
+    
+    else
+    {
+      if(player2.tail.poSition == 0)
+      {
+        if(player2.tail.index == 0)
+          player2.tail2.index=cols-1;
+        else
+          player2.tail2.index-=1;
+          
+        player2.tail2.poSition=7;
+      }
+      else
+      {
+        player2.tail2.index=player2.tail.index;
+        player2.tail2.poSition=player2.tail.poSition-1;
+      }
+    }
   }
-
-  player2.tail2.index=player2.tail.index+(player2.tail.poSition+1)/8;
-  player2.tail2.poSition=(player2.tail.poSition+1)%8;
 }
 
 void decToBin(unsigned char * tab, unsigned char value)
@@ -206,4 +351,3 @@ unsigned char expBaseTwo(unsigned char exponent)
     temp*=2;
   return temp;
 }
-
