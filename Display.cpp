@@ -51,289 +51,181 @@ void Display::clearPixel(IndPos parameters)
   bitMap[parameters.index]=binToDec(bin);
 }
 
-void Display::setBody(unsigned char playerNum, DIRECTIONS directionH)
+void Display::setBody(Snake & player, DIRECTIONS directionH)
 {
   unsigned char bin[8]; // table to store binary notation of the currently processed byte
-  DIRECTIONS directionT;
+  unsigned char bin2[8]; // table to store binary notation of the currently processed byte
   
-  if(playerNum == 1)
+  player.setHead(directionH);
+  unsigned char bin3[8];
+  int index=((player.head.y*cols)+(player.head.x/8)); // index in the XBM bitmap
+  unsigned char poSition=player.head.x % 8;
+  decToBin(bin3, bitMap[index]);
+  if(bin3[poSition] == 1)
+    {
+      player.lengthUp(2);
+      setPixel(player.head2);
+      return;
+    }
+  setPixel(player.head);
+  setPixel(player.head2);
+  
+  clearPixel(player.tail);
+  clearPixel(player.tail2);
+
+  int nextIndex;
+  int nextIndex2;
+
+  //next tail - direction UP
+  if(player.tail2.index < cols)
   {
-    player1.setHead(directionH);
-    setPixel(player1.head);
-    setPixel(player1.head2);
-    
-    clearPixel(player1.tail);
-    clearPixel(player1.tail2);
-
-    int nextIndex;
-    
-    if(player1.tail2.index < cols)
-      nextIndex=maxIndex-(cols-1-player1.tail2.index);
-    else
-      nextIndex=player1.tail2.index-cols;
-    
-    decToBin(bin, bitMap[nextIndex]);
-    while(1)
-    {
-      if(bin[player1.tail2.poSition] == 1)
-      {
-        player1.tail.index=nextIndex;
-        player1.tail.poSition=player1.tail2.poSition;
-        directionT=UP;
-        break;
-      }
-
-      if(player1.tail2.index > (maxIndex-cols))
-        nextIndex=(cols-1)-(maxIndex-player1.tail2.index);
-      else
-        nextIndex=player1.tail2.index+cols;
-      
-      decToBin(bin, bitMap[nextIndex]);
-      if(bin[player1.tail2.poSition] == 1)
-      {
-        player1.tail.index=nextIndex;
-        player1.tail.poSition=player1.tail2.poSition;
-        directionT=DOWN;
-        break;
-      }
-
-      if((player1.tail2.index+(player1.tail2.poSition+1)/8) == (maxIndex+1))
-        nextIndex=maxIndex-cols+1;
-      else
-        nextIndex=player1.tail2.index+(player1.tail2.poSition+1)/8;
-      
-      decToBin(bin, bitMap[nextIndex]);
-      if(bin[(player1.tail2.poSition+1)%8] == 1)
-      {
-        player1.tail.index=nextIndex;
-        player1.tail.poSition=(player1.tail2.poSition+1)%8;
-        directionT=RIGHT;
-        break;
-      }
-
-      if(player1.tail2.poSition == 0)
-      {
-        if(player1.tail2.index == 0)
-          player1.tail.index=cols-1;
-        else
-          player1.tail.index-=1;
-        
-        player1.tail.poSition=7;
-      }
-      else
-      {
-        player1.tail.index=player1.tail2.index;
-        player1.tail.poSition=player1.tail2.poSition-1;
-      }
-      directionT=LEFT;
-      break;
-    }
-    
-    if(directionT == UP)
-    {
-      if(player1.tail.index < cols)
-        player1.tail2.index=maxIndex-(cols-1-player1.tail.index);
-      else
-        player1.tail2.index=player1.tail.index-cols;
-      
-      player1.tail2.poSition=player1.tail.poSition;
-    }  
-    
-    else if(directionT == DOWN)
-    {
-      if(player1.tail.index > (maxIndex-cols))
-        player1.tail2.index=maxIndex-(cols-1-player1.tail.index);
-      else
-        player1.tail2.index=player1.tail.index+cols;
-      
-      player1.tail2.poSition=player1.tail.poSition;
-    }
-    
-    else if(directionT == RIGHT)
-    {
-      if((player1.tail.index+(player1.tail.poSition+1)/8) == (maxIndex+1))
-      {
-        player1.tail2.index=maxIndex-cols+1;
-        player1.tail2.poSition=0;
-      }
-      else
-      {
-        player1.tail2.index=player1.tail.index+(player1.tail.poSition+1)/8;
-        player1.tail2.poSition=(player1.tail.poSition+1) % 8;
-      }
-    }
-    
-    else
-    {
-      if(player1.tail.poSition == 0)
-      {
-        if(player1.tail.index == 0)
-          player1.tail2.index=cols-1;
-        else
-          player1.tail2.index-=1;
-          
-        player1.tail2.poSition=7;
-      }
-      else
-      {
-        player1.tail2.index=player1.tail.index;
-        player1.tail2.poSition=player1.tail.poSition-1;
-      }
-    }
+    nextIndex=maxIndex-(cols-1-player.tail2.index);
+    nextIndex2=nextIndex-cols;
+  }
+  else if(player.tail2.index < 2*cols)
+  {
+    nextIndex=player.tail2.index-cols;
+    nextIndex2=maxIndex-(cols-1-nextIndex);
+  }
+  else
+  {
+    nextIndex=player.tail2.index-cols;
+    nextIndex2=nextIndex-cols;
   }
 
-  else if(playerNum == 2)
+  decToBin(bin, bitMap[nextIndex]);
+  decToBin(bin2, bitMap[nextIndex2]);
+  while(1)
   {
-    player2.setHead(directionH);
-    setPixel(player2.head);
-    setPixel(player2.head2);
-    
-    clearPixel(player2.tail);
-    clearPixel(player2.tail2);
-
-    int nextIndex;
-    
-    if(player2.tail2.index < cols)
-      nextIndex=maxIndex-(cols-1-player2.tail2.index);
-    else
-      nextIndex=player2.tail2.index-cols;
-    
-    decToBin(bin, bitMap[nextIndex]);
-    while(1)
+    if((bin[player.tail2.poSition] == 1) && (bin2[player.tail2.poSition] == 1))
     {
-      if(bin[player2.tail2.poSition] == 1)
-      {
-        player2.tail.index=nextIndex;
-        player2.tail.poSition=player2.tail2.poSition;
-        directionT=UP;
-        break;
-      }
-
-      if(player2.tail2.index > (maxIndex-cols))
-        nextIndex=(cols-1)-(maxIndex-player2.tail2.index);
-      else
-        nextIndex=player2.tail2.index+cols;
-      
-      decToBin(bin, bitMap[nextIndex]);
-      if(bin[player2.tail2.poSition] == 1)
-      {
-        player2.tail.index=nextIndex;
-        player2.tail.poSition=player2.tail2.poSition;
-        directionT=DOWN;
-        break;
-      }
-
-      if((player2.tail2.index+(player2.tail2.poSition+1)/8) == (maxIndex+1))
-        nextIndex=maxIndex-cols+1;
-      else
-        nextIndex=player2.tail2.index+(player2.tail2.poSition+1)/8;
-      
-      decToBin(bin, bitMap[nextIndex]);
-      if(bin[(player2.tail2.poSition+1)%8] == 1)
-      {
-        player2.tail.index=nextIndex;
-        player2.tail.poSition=(player2.tail2.poSition+1)%8;
-        directionT=RIGHT;
-        break;
-      }
-
-      if(player2.tail2.poSition == 0)
-      {
-        if(player2.tail2.index == 0)
-          player2.tail.index=cols-1;
-        else
-          player2.tail.index-=1;
-        
-        player2.tail.poSition=7;
-      }
-      else
-      {
-        player2.tail.index=player2.tail2.index;
-        player2.tail.poSition=player2.tail2.poSition-1;
-      }
-      directionT=LEFT;
+      player.tail.index=nextIndex;
+      player.tail2.index=nextIndex2;
+      player.tail.poSition=player.tail2.poSition;
       break;
     }
-    
-    if(directionT == UP)
+
+    //next tail - direction DOWN
+    if(player.tail2.index > (maxIndex-cols))
     {
-      if(player2.tail.index < cols)
-        player2.tail2.index=maxIndex-(cols-1-player2.tail.index);
-      else
-        player2.tail2.index=player2.tail.index-cols;
-      
-      player2.tail2.poSition=player2.tail.poSition;
-    }  
-    
-    else if(directionT == DOWN)
-    {
-      if(player2.tail.index > (maxIndex-cols))
-        player2.tail2.index=maxIndex-(cols-1-player2.tail.index);
-      else
-        player2.tail2.index=player2.tail.index+cols;
-      
-      player2.tail2.poSition=player2.tail.poSition;
+      nextIndex=(cols-1)-(maxIndex-player.tail2.index);
+      nextIndex2=nextIndex+cols;
     }
-    
-    else if(directionT == RIGHT)
+    else if(player.tail2.index > (maxIndex-2*cols))
     {
-      if((player2.tail.index+(player2.tail.poSition+1)/8) == (maxIndex+1))
-      {
-        player2.tail2.index=maxIndex-cols+1;
-        player2.tail2.poSition=0;
-      }
-      else
-      {
-        player2.tail2.index=player2.tail.index+(player2.tail.poSition+1)/8;
-        player2.tail2.poSition=(player2.tail.poSition+1) % 8;
-      }
+      nextIndex=player.tail2.index+cols;
+      nextIndex2=(cols-1)-(maxIndex-nextIndex);
     }
-    
     else
     {
-      if(player2.tail.poSition == 0)
-      {
-        if(player2.tail.index == 0)
-          player2.tail2.index=cols-1;
-        else
-          player2.tail2.index-=1;
-          
-        player2.tail2.poSition=7;
-      }
-      else
-      {
-        player2.tail2.index=player2.tail.index;
-        player2.tail2.poSition=player2.tail.poSition-1;
-      }
+      nextIndex=player.tail2.index+cols;
+      nextIndex2=nextIndex+cols;
     }
+    
+    decToBin(bin, bitMap[nextIndex]);
+    decToBin(bin2, bitMap[nextIndex2]);
+    if((bin[player.tail2.poSition] == 1) && (bin2[player.tail2.poSition] == 1))
+    {
+      player.tail.index=nextIndex;
+      player.tail2.index=nextIndex2;
+      player.tail.poSition=player.tail2.poSition;
+      break;
+    }
+
+    //next tail - direction RIGHT
+    if((((player.tail2.index+(player.tail2.poSition+1)/8) % cols) == 0) && ((player.tail2.index+(player.tail2.poSition+1)/8) != player.tail2.index))
+    {
+      nextIndex=player.tail2.index-(cols-1);
+      nextIndex2=nextIndex;
+    }
+    else if((((player.tail2.index+(player.tail2.poSition+2)/8) % cols) == 0) && ((player.tail2.index+(player.tail2.poSition+2)/8) != player.tail2.index))
+    {
+      nextIndex=player.tail2.index;
+      nextIndex2=player.tail2.index-(cols-1);
+    }
+    else
+    {
+      nextIndex=player.tail2.index+(player.tail2.poSition+1)/8;
+      nextIndex2=player.tail2.index+(player.tail2.poSition+2)/8;
+    }
+    
+    decToBin(bin, bitMap[nextIndex]);
+    decToBin(bin2, bitMap[nextIndex2]);
+    if((bin[(player.tail2.poSition+1) % 8] == 1) && (bin2[(player.tail2.poSition+2) % 8] == 1))
+    {
+      player.tail.index=nextIndex;
+      player.tail2.index=nextIndex2;
+      player.tail.poSition=(player.tail2.poSition+1) % 8;
+      player.tail2.poSition=(player.tail2.poSition+2) % 8;
+      break;
+    }
+
+    //next tail - direction LEFT
+    if(player.tail2.poSition == 0)
+    {
+      if((player.tail2.index % cols) == 0)
+        player.tail.index=player.tail2.index+(cols-1);
+      else
+        player.tail.index=player.tail2.index-1;
+
+      player.tail2.index=player.tail.index;
+      player.tail.poSition=7;
+      player.tail2.poSition=6;
+    }
+    else if(player.tail2.poSition == 1)
+    {
+      player.tail.index=player.tail2.index;
+      if((player.tail2.index % cols) == 0)
+        player.tail2.index=player.tail2.index+(cols-1);
+      else
+        player.tail2.index-=1;
+
+      player.tail.poSition=0;
+      player.tail2.poSition=7;
+    }
+    else
+    {
+      player.tail.index=player.tail2.index;
+      player.tail.poSition=player.tail2.poSition-1;
+      player.tail2.poSition-=2;
+    }
+    break;
   }
 }
 
-void decToBin(unsigned char * tab, unsigned char value)
+void Display::setFood()
 {
-  unsigned char temp1=value;
-  char temp2;
+  XY coordinates;
+  coordinates.x = random(0, maximumX);
+  coordinates.y = random(0, maximumY);
+  setPixel(coordinates);
+}
   
-  for(char i=8; i!=0; i--)
+void decToBin(unsigned char * tab, unsigned char value)
   {
-    temp2=(temp1-expBaseTwo(i-1));
-    if(temp2>0)
+    unsigned char temp1=value;
+    char temp2;
+    
+    for(char i=8; i!=0; i--)
     {
-      tab[i-1]=1;
-      temp1=temp2;
-    }
-    else if(temp2<0)
-      tab[i-1]=0;
-    else
-    {
-      tab[i-1]=1;
-      for(i=(i-1); i!=0; i--)
+      temp2=(temp1-expBaseTwo(i-1));
+      if(temp2>0)
       {
-        tab[i-1]=0;
+        tab[i-1]=1;
+        temp1=temp2;
       }
-    break;
-    }
-  }
+      else if(temp2<0)
+        tab[i-1]=0;
+      else
+      {
+        tab[i-1]=1;
+        for(i=(i-1); i!=0; i--)
+        {
+          tab[i-1]=0;
+        }
+      break;
+      }
+   }
 }
 
 unsigned char binToDec(unsigned char * tab)
