@@ -22,7 +22,7 @@ Snake::Snake(/*const string & nm,*/ unsigned char ln, unsigned char th, unsigned
 	return name;
 }*/
 
-int Snake::lengthUp(unsigned char num) //// DO POPRAWKI !!! (uwzglednic kierunek ogona)
+int Snake::lengthUp(unsigned char num)
 {
 	Slength+=num;
 	return Slength;
@@ -54,13 +54,13 @@ int Snake::addToScore(int num)
 
 void Snake::setHead(DIRECTIONS directionH)
 {	
-  if((directionH == UP) && (head.x == head2.x) && (head.y > head2.y) && (head.y != maximumY))
+  if((directionH == UP) && (head.x == head2.x) && (((head.y > head2.y) && (head.y != maximumY)) || ((head2.y-head.y) == mapH)))
     directionH = DOWN;
-  else if((directionH == DOWN) && (head.x == head2.x) && (head.y < head2.y) && (head2.y != maximumY))
+  else if((directionH == DOWN) && (head.x == head2.x) && (((head.y < head2.y) && (head.y != 0)) || ((head.y-head2.y) == mapH)))
     directionH = UP;
-  else if((directionH == RIGHT) && (head.y == head2.y) && (head.x < head2.x) && (head2.x != maximumX))
+  else if((directionH == RIGHT) && (head.y == head2.y) && (((head.x < head2.x) && (head.x != 0)) || ((head.x-head2.x) == mapW)))
     directionH = LEFT;
-  else if((directionH == LEFT) && (head.y == head2.y) && (head.x > head2.x) && (head.x != maximumX))
+  else if((directionH == LEFT) && (head.y == head2.y) && (((head.x > head2.x) && (head.x != maximumX)) || ((head2.x-head.x) == mapW)))
     directionH = RIGHT;
   
 	if(directionH == UP)
@@ -148,6 +148,7 @@ void Snake::setHead(DIRECTIONS directionH)
     }
     if(head2.y != head.y)
       head2.y=head.y;
+      
 	}
 	
 	if(directionH == LEFT)
