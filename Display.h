@@ -20,7 +20,8 @@ class Display
 		~Display() {}
 		void setPixel(XY coordinates); // set pixel on the display that represents one pixel of the snake's body
     void clearPixel(IndPos parameters); // clear pixel on the display that represents one pixel of the snake's body
-    void setBody(unsigned char playerNum, DIRECTIONS directionH);
+    void setBody(Snake & player, DIRECTIONS directionH);
+    void setFood();
 		//const unsigned char * getDisplay() { return bitMap; }
 };
 
